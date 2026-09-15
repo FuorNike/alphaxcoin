@@ -4,7 +4,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 # ⚠️ ВСТАВЬ СВОЙ КЛЮЧ БОТА МЕЖДУ КАВЫЧКАМИ:
-BOT_TOKEN = "8619618419:AAFfKjA5UWOAxOekoflSmW2hGg05N5y3U-w"
+BOT_TOKEN = "8619618419:AAFBN58siBcfTILxueN9YpbYZ4Aj0CD8C_4"
 
 # Твоя готовая рабочая ссылка на тапалку:
 WEBAPP_URL = "https://fuornike.github.io/alphaxcoin/"
