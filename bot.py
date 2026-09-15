@@ -7,7 +7,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 BOT_TOKEN = "8619618419:AAFfKjA5UWOAxOekoflSmW2hGg05N5y3U-w"
 
 # Твоя готовая рабочая ссылка на тапалку:
-WEBAPP_URL = "https://github.io"
+WEBAPP_URL = "https://github.io"?v=2
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
