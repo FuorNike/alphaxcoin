@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AlphaX Coin</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #0b111e 0%, #05070c 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+            box-sizing: border-box;
+            padding: 50px 20px;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .title {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #ffe082 0%, #ffffff 50%, #b0bec5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 25px rgba(255, 224, 130, 0.15);
+        }
+
+        .coin-area {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .coin-glow {
+            position: absolute;
+            width: 340px;
+            height: 340px;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .coin-wrapper {
+            position: relative;
+            cursor: pointer;
+            z-index: 2;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.05s ease-out;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            border: 4px solid #00e5ff;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 
+                        0 0 25px rgba(0, 229, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .coin-wrapper:active {
+            transform: scale(0.93);
+        }
+
+        .coin-logo-text {
+            font-size: 110px;
+            font-weight: 900;
+            background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -5px;
+            pointer-events: none;
+        }
+
+        .click-float {
+            position: absolute;
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 900;
+            text-shadow: 0 0 8px #d4af37, 0 0 15px #00e5ff;
+            animation: floatUp 0.4s ease-out forwards;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.8); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.2); }
+        }
+
+        .stats-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score-container {
+            font-size: 54px;
+            font-weight: 900;
+            color: #00e5ff;
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+        }
+
+        .score-label {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="title">AlphaX Coin</div>
+    </div>
+
+    <div class="coin-area">
+        <div class="coin-glow"></div>
+        <div class="coin-wrapper" id="coinButton">
+            <span class="coin-logo-text">A</span>
+        </div>
+    </div>
+
+    <div class="stats-box">
+        <div class="score-container" id="score">0</div>
+        <div class="score-label">Баланс AlphaX Points (AXP)</div>
+    </div>
+
+    <script>
+        // Простейшая и максимально надежная логика
+        var score = 0;
+        var scoreEl = document.getElementById('score');
+        var coinButton = document.getElementById('coinButton');
+
+        // 1. Проверяем сохраненное значение прямо при старте
+        try {
+            var saved = localStorage.getItem('alphax_score');
+            if (saved) {
+                score = parseInt(saved, 10);
+                if (isNaN(score)) { score = 0; }
+            }
+        } catch (e) {
+            score = 0; // На случай если браузер блокирует память
+        }
+
+        // Показываем стартовый баланс на экране
+        scoreEl.innerText = score;
+
+        // 2. Обработка самого клика
+        coinButton.onclick = function(e) {
+            score = score + 1;
+            scoreEl.innerText = score;
+
+            // Сразу сохраняем новое число
+            try {
+                localStorage.setItem('alphax_score', score);
+            } catch (err) {}
+
+            // Создаем вылетающий текст +1
+            var rect = coinButton.getBoundingClientRect();
+            var clickFloat = document.createElement('div');
+            clickFloat.classList.add('click-float');
+            clickFloat.innerText = '+1';
+            
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            
+            clickFloat.style.left = x + 'px';
+            clickFloat.style.top = y + 'px';
+            
+            coinButton.appendChild(clickFloat);
+
+            setTimeout(function() { clickFloat.remove(); }, 400);
+        };
+    </script>
+</body>
+</html>
