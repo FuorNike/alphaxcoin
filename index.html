@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>AlphaX Coin</title>
+    <script src="https://telegram.org"></script>
     <style>
         body {
             margin: 0;
@@ -63,14 +64,11 @@
             border-radius: 50%;
             -webkit-tap-highlight-color: transparent;
             transition: transform 0.05s ease-out;
-            
-            /* Мощный хай-тек дизайн самой монеты без картинок */
             background: radial-gradient(circle at center, #141b2d 0%, #090d16 100%);
             border: 4px solid #00e5ff;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 
                         0 0 25px rgba(0, 229, 255, 0.5),
                         inset 0 0 30px rgba(0, 229, 255, 0.2);
-            
             display: flex;
             align-items: center;
             justify-content: center;
@@ -80,7 +78,6 @@
             transform: scale(0.93);
         }
 
-        /* Футуристичный неоновый логотип "А" прямо по центру */
         .coin-logo {
             font-size: 120px;
             font-weight: 900;
@@ -140,7 +137,6 @@
     <div class="coin-area">
         <div class="coin-glow"></div>
         <div class="coin-wrapper" id="coinButton">
-            <!-- Вместо баганых тегов картинок выводим стильный встроенный символ -->
             <span class="coin-logo">A</span>
         </div>
     </div>
@@ -151,15 +147,29 @@
     </div>
 
     <script>
+        var tg = window.Telegram.WebApp;
+        if (tg) {
+            tg.expand();
+            if (tg.setHeaderColor) tg.setHeaderColor('#0b111e');
+        }
+
         var score = 0;
         var scoreEl = document.getElementById('score');
         var coinButton = document.getElementById('coinButton');
 
+        // ☁️ ЗАГРУЗКА БАЛАНСА ИЗ ОБЛАКА TELEGRAM
         try {
-            var saved = localStorage.getItem('alphax_score');
-            if (saved) {
-                score = parseInt(saved, 10);
-                if (isNaN(score)) { score = 0; }
+            if (tg && tg.CloudStorage) {
+                tg.CloudStorage.getItem('alphax_score', function(error, value) {
+                    if (!error && value) {
+                        score = parseInt(value, 10);
+                        if (isNaN(score)) { score = 0; }
+                        scoreEl.innerText = score;
+                    }
+                });
+            } else {
+                var saved = localStorage.getItem('alphax_score');
+                if (saved) { score = parseInt(saved, 10) || 0; scoreEl.innerText = score; }
             }
         } catch (e) {
             score = 0;
@@ -167,12 +177,18 @@
 
         scoreEl.innerText = score;
 
+        // ОБРАБОТКА КЛИКА
         coinButton.onclick = function(e) {
             score = score + 1;
             scoreEl.innerText = score;
 
+            // ☁️ СОХРАНЕНИЕ БАЛАНСА В ОБЛАКО TELEGRAM
             try {
-                localStorage.setItem('alphax_score', score);
+                if (tg && tg.CloudStorage) {
+                    tg.CloudStorage.setItem('alphax_score', score.toString());
+                } else {
+                    localStorage.setItem('alphax_score', score);
+                }
             } catch (err) {}
 
             var rect = coinButton.getBoundingClientRect();
@@ -189,6 +205,12 @@
             coinButton.appendChild(clickFloat);
 
             setTimeout(function() { clickFloat.remove(); }, 400);
+
+            try {
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('medium');
+                }
+            } catch(hErr) {}
         };
     </script>
 </body>
