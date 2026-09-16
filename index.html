@@ -7,125 +7,39 @@
     <script src="https://telegram.org"></script>
     <style>
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background: radial-gradient(circle at center, #0b111e 0%, #05070c 100%);
-            color: #ffffff;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            height: 100vh;
-            overflow: hidden;
-            user-select: none;
-            box-sizing: border-box;
-            padding: 50px 20px;
+            color: #ffffff; font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            height: 100vh; overflow: hidden; user-select: none; box-sizing: border-box; padding: 50px 20px;
         }
-
-        .header {
-            text-align: center;
-        }
-
+        .header { text-align: center; }
         .title {
-            font-size: 36px;
-            font-weight: 900;
-            letter-spacing: 2px;
+            font-size: 36px; font-weight: 900; letter-spacing: 2px;
             background: linear-gradient(135deg, #ffe082 0%, #ffffff 50%, #b0bec5 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             text-shadow: 0 0 25px rgba(255, 224, 130, 0.15);
         }
-
-        .coin-area {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            flex-grow: 1;
-        }
-
-        .coin-glow {
-            position: absolute;
-            width: 340px;
-            height: 340px;
-            background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0,0,0,0) 70%);
-            pointer-events: none;
-            z-index: 1;
-        }
-
+        .coin-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
+        .coin-glow { position: absolute; width: 340px; height: 340px; background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0,0,0,0) 70%); pointer-events: none; z-index: 1; }
         .coin-wrapper {
-            position: relative;
-            cursor: pointer;
-            z-index: 2;
-            width: 250px;
-            height: 250px;
-            border-radius: 50%;
-            -webkit-tap-highlight-color: transparent;
-            transition: transform 0.05s ease-out;
-            background: radial-gradient(circle at center, #141b2d 0%, #090d16 100%);
-            border: 4px solid #00e5ff;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 
-                        0 0 25px rgba(0, 229, 255, 0.5),
-                        inset 0 0 30px rgba(0, 229, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative; cursor: pointer; z-index: 2; width: 250px; height: 250px; border-radius: 50%;
+            -webkit-tap-highlight-color: transparent; transition: transform 0.05s ease-out;
+            background: radial-gradient(circle at center, #141b2d 0%, #090d16 100%); border: 4px solid #00e5ff;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 229, 255, 0.5), inset 0 0 30px rgba(0, 229, 255, 0.2);
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .coin-wrapper:active {
-            transform: scale(0.93);
-        }
-
+        .coin-wrapper:active { transform: scale(0.93); }
         .coin-logo {
-            font-size: 120px;
-            font-weight: 900;
-            background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0px 0px 15px rgba(0, 229, 255, 0.6));
-            letter-spacing: -2px;
-            user-select: none;
-            pointer-events: none;
+            font-size: 120px; font-weight: 900; background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 0px 15px rgba(0, 229, 255, 0.6)); letter-spacing: -2px; pointer-events: none;
         }
-
-        .click-float {
-            position: absolute;
-            color: #ffffff;
-            font-size: 32px;
-            font-weight: 900;
-            text-shadow: 0 0 8px #d4af37, 0 0 15px #00e5ff;
-            animation: floatUp 0.4s ease-out forwards;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(0.8); }
-            100% { opacity: 0; transform: translateY(-100px) scale(1.2); }
-        }
-
-        .stats-box {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .score-container {
-            font-size: 54px;
-            font-weight: 900;
-            color: #00e5ff;
-            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
-        }
-
-        .score-label {
-            color: #64748b;
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-top: 5px;
-        }
+        .click-float { position: absolute; color: #ffffff; font-size: 32px; font-weight: 900; text-shadow: 0 0 8px #d4af37, 0 0 15px #00e5ff; animation: floatUp 0.4s ease-out forwards; pointer-events: none; z-index: 10; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-100px) scale(1.2); } }
+        .stats-box { text-align: center; margin-bottom: 20px; }
+        .score-container { font-size: 54px; font-weight: 900; color: #00e5ff; text-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+        .score-label { color: #64748b; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -159,63 +73,69 @@
             if (tg.setHeaderColor) tg.setHeaderColor('#0b111e');
         }
 
-        // ⚠️ ЗАМЕНИ НА ССЫЛКУ СВОЕГО ВЕБ-СЕРВИСА НА RENDER (БЕЗ СЛЭША В КОНЦЕ):
+        // ⚠️ ВСТАВЬ СЮДА СВОЮ ССЫЛКУ С RENDER (БЕЗ СЛЭША В КОНЦЕ):
         var SERVER_URL = "https://onrender.com"; 
 
-        // 1. Быстрая загрузка бэкапа из памяти устройства
+        // 1. МГНОВЕННАЯ загрузка локального баланса, чтобы игра работала ПРИ ЛЮБЫХ условиях
         try {
             var localSaved = localStorage.getItem('alphax_score_' + userId);
-            if (localSaved) {
+            if (localSaved !== null) {
                 score = parseInt(localSaved, 10) || 0;
-                scoreEl.innerText = score;
             }
-        } catch(e) {}
+        } catch(e) { score = 0; }
+        
+        scoreEl.innerText = score.toLocaleString();
 
-        // 2. Фоновый запрос баланса с сервера базы данных Render
+        // 2. БЕЗОПАСНАЯ загрузка с сервера Render (внутри блоков try-catch, чтобы не ломать клики)
         function loadBalance() {
-            fetch(SERVER_URL + '/api/score/' + userId)
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (data && data.score !== undefined) {
-                        if (data.score > score) {
-                            score = data.score;
-                            scoreEl.innerText = score;
-                            localStorage.setItem('alphax_score_' + userId, score);
+            if (!SERVER_URL || SERVER_URL.includes("твое-название")) return;
+            try {
+                fetch(SERVER_URL + '/api/score/' + userId)
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (data && data.score !== undefined) {
+                            if (data.score > score) {
+                                score = data.score;
+                                scoreEl.innerText = score.toLocaleString();
+                                localStorage.setItem('alphax_score_' + userId, score);
+                            }
                         }
-                    }
-                })
-                .catch(function(err) { console.log("Подключение к серверу..."); });
+                    })
+                    .catch(function(err) { console.log("Сервер просыпается..."); });
+            } catch(e) {}
         }
         
         loadBalance();
 
-        // 3. Фоновая плавная отправка баланса на сервер без лагов экрана
+        // 3. БЕЗОПАСНАЯ фоновая отправка данных на сервер
         var syncTimeout = null;
         function syncWithServer() {
             try {
                 localStorage.setItem('alphax_score_' + userId, score);
             } catch(e) {}
 
+            if (!SERVER_URL || SERVER_URL.includes("твое-название")) return;
             if (syncTimeout) clearTimeout(syncTimeout);
             
             syncTimeout = setTimeout(function() {
-                // Исправлено: JSON пишется большими буквами!
-                fetch(SERVER_URL + '/api/score', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId, score: score })
-                }).catch(function(e) {});
+                try {
+                    fetch(SERVER_URL + '/api/score', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId, score: score })
+                    }).catch(function(e) {});
+                } catch(e) {}
             }, 3000);
         }
 
-        // ОБРАБОТКА ТАПА (Полностью исправлена и летит)
+        // КЛИКЕР ТЕПЕРЬ СВЯЗАН НАПРЯМУЮ, БЕЗ ЛИШНИХ ПОСРЕДНИКОВ
         coinButton.onclick = function(e) {
             score = score + 1;
-            scoreEl.innerText = score;
+            scoreEl.innerText = score.toLocaleString();
 
             syncWithServer();
 
-            // Создаем вылетающий текст +1
+            // Создаем текст +1
             var rect = coinButton.getBoundingClientRect();
             var clickFloat = document.createElement('div');
             clickFloat.classList.add('click-float');
