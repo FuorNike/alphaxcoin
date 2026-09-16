@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>AlphaX Coin</title>
-    <script src="https://telegram.org"></script>
     <style>
         body {
             margin: 0; padding: 0;
@@ -22,6 +21,8 @@
         }
         .coin-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
         .coin-glow { position: absolute; width: 340px; height: 340px; background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0,0,0,0) 70%); pointer-events: none; z-index: 1; }
+        
+        /* Возвращаем дорогую неоновую монету */
         .coin-wrapper {
             position: relative; cursor: pointer; z-index: 2; width: 250px; height: 250px; border-radius: 50%;
             -webkit-tap-highlight-color: transparent; transition: transform 0.05s ease-out;
@@ -35,8 +36,11 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             filter: drop-shadow(0px 0px 15px rgba(0, 229, 255, 0.6)); letter-spacing: -2px; pointer-events: none;
         }
+        
+        /* Вылетающий текст +1 со свечением */
         .click-float { position: absolute; color: #ffffff; font-size: 32px; font-weight: 900; text-shadow: 0 0 8px #d4af37, 0 0 15px #00e5ff; animation: floatUp 0.4s ease-out forwards; pointer-events: none; z-index: 10; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-100px) scale(1.2); } }
+        
         .stats-box { text-align: center; margin-bottom: 20px; }
         .score-container { font-size: 54px; font-weight: 900; color: #00e5ff; text-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
         .score-label { color: #64748b; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
@@ -60,22 +64,26 @@
         <div class="score-label">Баланс AlphaX Points (AXP)</div>
     </div>
 
+    <!-- Подключаем скрипт Telegram в самом конце, чтобы он не тормозил загрузку элементов -->
+    <script src="https://telegram.org"></script>
     <script>
-        var tg = window.Telegram.WebApp;
+        // Инициализация WebApp без риска вызвать ошибку до загрузки DOM
+        try {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.expand();
+                if (window.Telegram.WebApp.setHeaderColor) {
+                    window.Telegram.WebApp.setHeaderColor('#0b111e');
+                }
+            }
+        } catch(e) {}
+
         var score = 0;
         var scoreEl = document.getElementById('score');
         var coinButton = document.getElementById('coinButton');
         
-        var userId = 999;
-        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            userId = tg.initDataUnsafe.user.id;
-            tg.expand();
-            if (tg.setHeaderColor) tg.setHeaderColor('#0b111e');
-        }
-
-        // 1. ЧИСТОЕ ЛОКАЛЬНОЕ ЗАГРУЖЕНИЕ БЕЗ СЕТЕВЫХ ЗАПРОСОВ
+        // Читаем старый локальный баланс
         try {
-            var saved = localStorage.getItem('alphax_score_' + userId);
+            var saved = localStorage.getItem('alphax_pure_score');
             if (saved !== null) {
                 score = parseInt(saved, 10) || 0;
             }
@@ -83,33 +91,37 @@
         
         scoreEl.innerText = score.toLocaleString();
 
-        // ЧИСТЫЙ КЛИКЕР — НИКАКОГО ИНТЕРНЕТА, ТОЛЬКО МАТЕМАТИКА ЭКРАНА
+        // Безопасный и реактивный обработчик кликов
         coinButton.onclick = function(e) {
             score = score + 1;
             scoreEl.innerText = score.toLocaleString();
 
             try {
-                localStorage.setItem('alphax_score_' + userId, score);
+                localStorage.setItem('alphax_pure_score', score);
             } catch (err) {}
 
-            // Эффект вылетающего текста +1
+            // Логика вылета текста +1
             var rect = coinButton.getBoundingClientRect();
             var clickFloat = document.createElement('div');
             clickFloat.classList.add('click-float');
             clickFloat.innerText = '+1';
             
-            var x = e.clientX - rect.left;
-            var y = e.clientY - rect.top;
+            // Защита от сбоя координат на мобилках
+            var clickX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+            var clickY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
             
-            clickFloat.style.left = x + 'px';
-            clickFloat.style.top = y + 'px';
+            clickFloat.style.left = (clickX || 125) + 'px';
+            clickFloat.style.top = (clickY || 125) + 'px';
             
             coinButton.appendChild(clickFloat);
             
             setTimeout(function() { clickFloat.remove(); }, 400);
 
+            // Мягкая вибрация
             try {
-                if (tg && tg.HapticFeedback) { tg.HapticFeedback.impactOccurred('medium'); }
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                }
             } catch(hErr) {}
         };
     </script>
