@@ -73,69 +73,24 @@
             if (tg.setHeaderColor) tg.setHeaderColor('#0b111e');
         }
 
-        // ⚠️ ТВОЯ ССЫЛКА НА RENDER С ТВОЕГО СКРИНШОТА (БЕЗ СЛЭША В КОНЦЕ):
-        var SERVER_URL = "https://alphaxcoin-3.onrender.com"; 
-
-        // 1. МГНОВЕННАЯ автономная загрузка баланса из памяти устройства при старте
+        // 1. ЧИСТОЕ ЛОКАЛЬНОЕ ЗАГРУЖЕНИЕ БЕЗ СЕТЕВЫХ ЗАПРОСОВ
         try {
-            var localSaved = localStorage.getItem('alphax_score_' + userId);
-            if (localSaved !== null) {
-                score = parseInt(localSaved, 10) || 0;
+            var saved = localStorage.getItem('alphax_score_' + userId);
+            if (saved !== null) {
+                score = parseInt(saved, 10) || 0;
             }
         } catch(e) { score = 0; }
         
         scoreEl.innerText = score.toLocaleString();
 
-        // 2. БЕЗОПАСНАЯ фоновая загрузка с сервера (работает в фоне, не блокируя клики)
-        function loadBalance() {
-            if (!SERVER_URL) return;
-            try {
-                fetch(SERVER_URL + '/api/score/' + userId)
-                    .then(function(res) { return res.json(); })
-                    .then(function(data) {
-                        if (data && data.score !== undefined) {
-                            // Если на сервере очков больше (например зашел с ПК) — обновляем баланс смартфона
-                            if (data.score > score) {
-                                score = data.score;
-                                scoreEl.innerText = score.toLocaleString();
-                                localStorage.setItem('alphax_score_' + userId, score);
-                            }
-                        }
-                    })
-                    .catch(function(err) { console.log("Синхронизация ожидает сервер..."); });
-            } catch(e) {}
-        }
-        
-        loadBalance();
-
-        // 3. БЕЗОПАСНАЯ фоновая отправка данных на сервер (срабатывает через 3 секунды после тапов)
-        var syncTimeout = null;
-        function syncWithServer() {
-            try {
-                localStorage.setItem('alphax_score_' + userId, score);
-            } catch(e) {}
-
-            if (!SERVER_URL) return;
-            if (syncTimeout) clearTimeout(syncTimeout);
-            
-            syncTimeout = setTimeout(function() {
-                try {
-                    fetch(SERVER_URL + '/api/score', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ user_id: userId, score: score })
-                    }).catch(function(e) {});
-                } catch(e) {}
-            }, 3000);
-        }
-
-        // КЛИКЕР ТЕПЕРЬ ПОЛНОСТЬЮ АВТОНОМЕН И РАБОТАЕТ ВСЕГДА
+        // ЧИСТЫЙ КЛИКЕР — НИКАКОГО ИНТЕРНЕТА, ТОЛЬКО МАТЕМАТИКА ЭКРАНА
         coinButton.onclick = function(e) {
             score = score + 1;
             scoreEl.innerText = score.toLocaleString();
 
-            // Запускаем фоновое сохранение (оно не тормозит и не блокирует клик)
-            syncWithServer();
+            try {
+                localStorage.setItem('alphax_score_' + userId, score);
+            } catch (err) {}
 
             // Эффект вылетающего текста +1
             var rect = coinButton.getBoundingClientRect();
