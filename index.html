@@ -7,39 +7,127 @@
     <script src="https://telegram.org"></script>
     <style>
         body {
-            margin: 0; padding: 0;
+            margin: 0;
+            padding: 0;
             background: radial-gradient(circle at center, #0b111e 0%, #05070c 100%);
-            color: #ffffff; font-family: 'Segoe UI', Roboto, sans-serif;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            height: 100vh; overflow: hidden; user-select: none; box-sizing: border-box; padding: 50px 20px;
+            color: #ffffff;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+            box-sizing: border-box;
+            padding: 50px 20px;
         }
-        .header { text-align: center; }
+
+        .header {
+            text-align: center;
+        }
+
         .title {
-            font-size: 36px; font-weight: 900; letter-spacing: 2px;
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: 2px;
             background: linear-gradient(135deg, #ffe082 0%, #ffffff 50%, #b0bec5 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-shadow: 0 0 25px rgba(255, 224, 130, 0.15);
         }
-        .coin-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
-        .coin-glow { position: absolute; width: 340px; height: 340px; background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0,0,0,0) 70%); pointer-events: none; z-index: 1; }
+
+        .coin-area {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .coin-glow {
+            position: absolute;
+            width: 340px;
+            height: 340px;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
         .coin-wrapper {
-            position: relative; cursor: pointer; z-index: 2; width: 250px; height: 250px; border-radius: 50%;
-            -webkit-tap-highlight-color: transparent; transition: transform 0.05s ease-out;
-            background: radial-gradient(circle at center, #141b2d 0%, #090d16 100%); border: 4px solid #00e5ff;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 229, 255, 0.5), inset 0 0 30px rgba(0, 229, 255, 0.2);
-            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            cursor: pointer;
+            z-index: 2;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.05s ease-out;
+            background: radial-gradient(circle at center, #141b2d 0%, #090d16 100%);
+            border: 4px solid #00e5ff;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 
+                        0 0 25px rgba(0, 229, 255, 0.5),
+                        inset 0 0 30px rgba(0, 229, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .coin-wrapper:active { transform: scale(0.93); }
+
+        /* Эффект сжатия монеты по центру при тапе */
+        .coin-wrapper:active {
+            transform: scale(0.93);
+        }
+
         .coin-logo {
-            font-size: 120px; font-weight: 900; background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0px 0px 15px rgba(0, 229, 255, 0.6)); letter-spacing: -2px; pointer-events: none;
+            font-size: 120px;
+            font-weight: 900;
+            background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 0px 15px rgba(0, 229, 255, 0.6));
+            letter-spacing: -2px;
+            user-select: none;
+            pointer-events: none;
         }
-        .click-float { position: absolute; color: #ffffff; font-size: 32px; font-weight: 900; text-shadow: 0 0 8px #d4af37, 0 0 15px #00e5ff; animation: floatUp 0.4s ease-out forwards; pointer-events: none; z-index: 10; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-100px) scale(1.2); } }
-        .stats-box { text-align: center; margin-bottom: 20px; }
-        .score-container { font-size: 54px; font-weight: 900; color: #00e5ff; text-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
-        .score-label { color: #64748b; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
+
+        /* Вылетающий текст +1 */
+        .click-float {
+            position: absolute;
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 900;
+            text-shadow: 0 0 8px #d4af37, 0 0 15px #00e5ff;
+            animation: floatUp 0.4s ease-out forwards;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.8); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.2); }
+        }
+
+        .stats-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score-container {
+            font-size: 54px;
+            font-weight: 900;
+            color: #00e5ff;
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+        }
+
+        .score-label {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -56,7 +144,7 @@
     </div>
 
     <div class="stats-box">
-        <div class="score-container" id="score">Загрузка...</div>
+        <div class="score-container" id="score">0</div>
         <div class="score-label">Баланс AlphaX Points (AXP)</div>
     </div>
 
@@ -66,7 +154,6 @@
         var scoreEl = document.getElementById('score');
         var coinButton = document.getElementById('coinButton');
         
-        // Получаем ID пользователя из Telegram. Если открыто вне ТГ — ставим тестовый ID 999
         var userId = 999;
         if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
             userId = tg.initDataUnsafe.user.id;
@@ -74,32 +161,43 @@
             if (tg.setHeaderColor) tg.setHeaderColor('#0b111e');
         }
 
-        // ⚠️ НАСТРОЙКА АДРЕСА ТВОЕГО СЕРВЕРА НА RENDER:
-        // Скопируй адрес своего Web Service с панели Render (вида https://onrender.com)
-        // И вставь его ниже вместо моей заглушки. Обязательно БЕЗ слеша на конце!
-        var SERVER_URL = "https://alphaxcoin-3.onrender.com";
+        // ⚠️ ВСТАВЬ СЮДА СВОЮ ССЫЛКУ С RENDER (БЕЗ СЛЭША В КОНЦЕ):
+        var SERVER_URL = "https://onrender.com"; 
 
-        // 🔁 1. ЗАГРУЗКА БАЛАНСА С СЕРВЕРА RENDER ПРИ СТАРТЕ
+        // 1. Сразу подгружаем локальный бэкап устройства, чтобы не было зависаний экрана
+        try {
+            var localSaved = localStorage.getItem('alphax_score_' + userId);
+            if (localSaved) {
+                score = parseInt(localSaved, 10) || 0;
+                scoreEl.innerText = score.toLocaleString();
+            }
+        } catch(e) {}
+
+        // 2. Фоновый запрос к базе данных Render
         function loadBalance() {
             fetch(SERVER_URL + '/api/score/' + userId)
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     if (data && data.score !== undefined) {
-                        score = data.score;
-                        scoreEl.innerText = score.toLocaleString();
+                        // Если в облаке базы очков больше — синхронизируем
+                        if (data.score > score) {
+                            score = data.score;
+                            scoreEl.innerText = score.toLocaleString();
+                            localStorage.setItem('alphax_score_' + userId, score);
+                        }
                     }
                 })
-                .catch(function(err) {
-                    // Если сервер Render спит, берем локальный бэкап устройства
-                    var saved = localStorage.getItem('alphax_score_' + userId);
-                    if (saved) { score = parseInt(saved, 10) || 0; }
-                    scoreEl.innerText = score.toLocaleString();
-                });
+                .catch(function(err) { console.log("Синхронизация ожидает сервер..."); });
         }
         
         loadBalance();
 
-        // 🔁 2. ФОНОВАЯОТПРАВКА БАЛАНСА НА СЕРВЕР (Раз в 3 секунды, чтобы не спамить сеть)
+        // Повторяем запрос баланса при старте каждые 5 секунд, пока просыпается Render
+        var checkServerInterval = setInterval(function() {
+            if (score === 0) { loadBalance(); } else { clearInterval(checkServerInterval); }
+        }, 5000);
+
+        // 3. Фоновая плавная отправка баланса на сервер
         var syncTimeout = null;
         function syncWithServer() {
             try {
@@ -112,12 +210,12 @@
                 fetch(SERVER_URL + '/api/score', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: json.stringify({ user_id: userId, score: score })
+                    body: JSON.stringify({ user_id: userId, score: score })
                 }).catch(function(e) {});
             }, 3000);
         }
 
-        // ОБРАБОТКА КЛИКА
+        // РЕАКТИВНАЯ ОБРАБОТКА ТАПА
         coinButton.onclick = function(e) {
             score = score + 1;
             scoreEl.innerText = score.toLocaleString();
@@ -125,7 +223,7 @@
             // Запускаем фоновую синхронизацию
             syncWithServer();
 
-            // Эффект +1
+            // Создаем вылетающий текст +1 ровно в точке клика
             var rect = coinButton.getBoundingClientRect();
             var clickFloat = document.createElement('div');
             clickFloat.classList.add('click-float');
@@ -138,6 +236,7 @@
             clickFloat.style.top = y + 'px';
             
             coinButton.appendChild(clickFloat);
+            
             setTimeout(function() { clickFloat.remove(); }, 400);
 
             try {
