@@ -74,7 +74,6 @@
             justify-content: center;
         }
 
-        /* Эффект сжатия монеты по центру при тапе */
         .coin-wrapper:active {
             transform: scale(0.93);
         }
@@ -91,7 +90,6 @@
             pointer-events: none;
         }
 
-        /* Вылетающий текст +1 */
         .click-float {
             position: absolute;
             color: #ffffff;
@@ -161,43 +159,37 @@
             if (tg.setHeaderColor) tg.setHeaderColor('#0b111e');
         }
 
-        // ⚠️ ВСТАВЬ СЮДА СВОЮ ССЫЛКУ С RENDER (БЕЗ СЛЭША В КОНЦЕ):
+        // ⚠️ ЗАМЕНИ НА ССЫЛКУ СВОЕГО ВЕБ-СЕРВИСА НА RENDER (БЕЗ СЛЭША В КОНЦЕ):
         var SERVER_URL = "https://onrender.com"; 
 
-        // 1. Сразу подгружаем локальный бэкап устройства, чтобы не было зависаний экрана
+        // 1. Быстрая загрузка бэкапа из памяти устройства
         try {
             var localSaved = localStorage.getItem('alphax_score_' + userId);
             if (localSaved) {
                 score = parseInt(localSaved, 10) || 0;
-                scoreEl.innerText = score.toLocaleString();
+                scoreEl.innerText = score;
             }
         } catch(e) {}
 
-        // 2. Фоновый запрос к базе данных Render
+        // 2. Фоновый запрос баланса с сервера базы данных Render
         function loadBalance() {
             fetch(SERVER_URL + '/api/score/' + userId)
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     if (data && data.score !== undefined) {
-                        // Если в облаке базы очков больше — синхронизируем
                         if (data.score > score) {
                             score = data.score;
-                            scoreEl.innerText = score.toLocaleString();
+                            scoreEl.innerText = score;
                             localStorage.setItem('alphax_score_' + userId, score);
                         }
                     }
                 })
-                .catch(function(err) { console.log("Синхронизация ожидает сервер..."); });
+                .catch(function(err) { console.log("Подключение к серверу..."); });
         }
         
         loadBalance();
 
-        // Повторяем запрос баланса при старте каждые 5 секунд, пока просыпается Render
-        var checkServerInterval = setInterval(function() {
-            if (score === 0) { loadBalance(); } else { clearInterval(checkServerInterval); }
-        }, 5000);
-
-        // 3. Фоновая плавная отправка баланса на сервер
+        // 3. Фоновая плавная отправка баланса на сервер без лагов экрана
         var syncTimeout = null;
         function syncWithServer() {
             try {
@@ -207,6 +199,7 @@
             if (syncTimeout) clearTimeout(syncTimeout);
             
             syncTimeout = setTimeout(function() {
+                // Исправлено: JSON пишется большими буквами!
                 fetch(SERVER_URL + '/api/score', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -215,15 +208,14 @@
             }, 3000);
         }
 
-        // РЕАКТИВНАЯ ОБРАБОТКА ТАПА
+        // ОБРАБОТКА ТАПА (Полностью исправлена и летит)
         coinButton.onclick = function(e) {
             score = score + 1;
-            scoreEl.innerText = score.toLocaleString();
+            scoreEl.innerText = score;
 
-            // Запускаем фоновую синхронизацию
             syncWithServer();
 
-            // Создаем вылетающий текст +1 ровно в точке клика
+            // Создаем вылетающий текст +1
             var rect = coinButton.getBoundingClientRect();
             var clickFloat = document.createElement('div');
             clickFloat.classList.add('click-float');
