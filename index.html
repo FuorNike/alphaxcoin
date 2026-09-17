@@ -8,7 +8,7 @@
         body {
             margin: 0; padding: 0;
             background: radial-gradient(circle at center, #0b111e 0%, #05070c 100%);
-            color: #ffffff; font-family: sans-serif;
+            color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             display: flex; flex-direction: column; align-items: center; justify-content: space-between;
             height: 100vh; overflow: hidden; user-select: none; box-sizing: border-box; padding: 50px 20px;
         }
@@ -22,24 +22,26 @@
         .coin-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
         .coin-glow { position: absolute; width: 340px; height: 340px; background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0,0,0,0) 70%); pointer-events: none; z-index: 1; }
         
+        /* Дорогой неоновый дизайн монеты */
         .coin-wrapper {
             position: relative; cursor: pointer; z-index: 2; width: 250px; height: 250px; border-radius: 50%;
             transition: transform 0.05s ease-out;
             background: radial-gradient(circle at center, #141b2d 0%, #090d16 100%); border: 4px solid #00e5ff;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 229, 255, 0.5), inset 0 0 30px rgba(0, 229, 255, 0.2);
             display: flex; align-items: center; justify-content: center;
+            
+            /* Полное уничтожение синего круга на телефонах */
             -webkit-tap-highlight-color: transparent;
-            tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
         }
-        
         .coin-wrapper:active { transform: scale(0.93); }
-        
         .coin-logo {
             font-size: 120px; font-weight: 900; background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             filter: drop-shadow(0px 0px 15px rgba(0, 229, 255, 0.6)); letter-spacing: -2px; pointer-events: none;
         }
         
+        /* Всплывающий текст +1 */
         .click-float { position: absolute; color: #ffffff; font-size: 32px; font-weight: 900; text-shadow: 0 0 8px #d4af37, 0 0 15px #00e5ff; animation: floatUp 0.4s ease-out forwards; pointer-events: none; z-index: 10; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-100px) scale(1.2); } }
         
@@ -56,7 +58,8 @@
 
     <div class="coin-area">
         <div class="coin-glow"></div>
-        <div class="coin-wrapper" id="coinButton" onclick="doTap(event)">
+        <!-- Убрали нахрен doTap(event) из тега, теперь элемент чист -->
+        <div class="coin-wrapper" id="coinButton">
             <span class="coin-logo">A</span>
         </div>
     </div>
@@ -66,106 +69,96 @@
         <div class="score-label">Баланс AlphaX Points (AXP)</div>
     </div>
 
-    <script src="https://telegram.org"></script>
     <script>
-        var tg = window.Telegram.WebApp;
-        var score = 0;
-        var scoreEl = document.getElementById('score');
-        var coinButton = document.getElementById('coinButton');
-        
-        var userId = 999;
-        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            userId = tg.initDataUnsafe.user.id;
-            try { tg.expand(); if (tg.setHeaderColor) tg.setHeaderColor('#0b111e'); } catch(e) {}
-        }
+        // Запускаем весь код строго ПОСЛЕ того, как страница полностью загрузилась в память
+        window.addEventListener('DOMContentLoaded', function() {
+            var score = 0;
+            var scoreEl = document.getElementById('score');
+            var coinButton = document.getElementById('coinButton');
+            var userId = 999;
+            var SERVER_URL = "https://onrender.com";
 
-        var SERVER_URL = "https://onrender.com"; 
-
-        // ⚡️ 1. ЖЕЛЕЗОБЕТОННАЯ МГНОВЕННАЯ ЗАГРУЗКА ИЗ ПАМЯТИ ТЕЛЕФОНА
-        // Этот блок работает локально и никогда не упадет из-за ошибок сети
-        try {
-            var saved = localStorage.getItem('axp_score_' + userId);
-            if (saved !== null) {
-                score = parseInt(saved, 10) || 0;
+            // Интегрируем Telegram WebApp из глобального окна браузера
+            var tg = window.Telegram ? window.Telegram.WebApp : null;
+            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                userId = tg.initDataUnsafe.user.id;
+                try { tg.expand(); if (tg.setHeaderColor) tg.setHeaderColor('#0b111e'); } catch(e) {}
             }
-        } catch(e) { score = 0; }
-        scoreEl.innerText = score.toLocaleString();
 
-        // ☁️ 2. ИЗОЛИРОВАННЫЙ ФОНОВЫЙ ЗАПРОС К БАЗЕ ДАННЫХ RENDER
-        // Если сеть выдаст блок CORS — эта функция тихо закроется, не ломая кликер
-        function loadFromDB() {
-            if (!SERVER_URL) return;
+            # Используем python для точного подсчета базовых очков, если это необходимо при сбросе
+            // 1. Мгновенная автономная загрузка баланса устройства
             try {
-                fetch(SERVER_URL + '/api/score/' + userId)
-                    .then(function(res) { return res.json(); })
-                    .then(function(data) {
-                        if (data && data.score !== undefined) {
-                            if (data.score > score) {
-                                score = data.score;
-                                scoreEl.innerText = score.toLocaleString();
-                                localStorage.setItem('axp_score_' + userId, score);
-                            }
-                        }
-                    })
-                    .catch(function(e) { console.log("Фоновое ожидание базы данных..."); });
-            } catch(err) {}
-        }
-        
-        // Запускаем фоновую подгрузку чуть позже, чтобы дать странице отрендериться
-        setTimeout(loadFromDB, 1000);
-
-        // ☁️ 3. МЯГКАЯ ФОНОВАЯ ОТПРАВКА ОЧКОВ В БАЗУ ДАННЫХ
-        var syncTimeout = null;
-        function saveToDB() {
-            // Сначала железно спасаем очки локально на телефоне
-            try {
-                localStorage.setItem('axp_score_' + userId, score);
-            } catch(e) {}
-
-            if (!SERVER_URL) return;
-            if (syncTimeout) clearTimeout(syncTimeout);
-            
-            // Отправляем запрос на сервер в изолированном тайм-ауте
-            syncTimeout = setTimeout(function() {
-                try {
-                    fetch(SERVER_URL + '/api/score', {
-                        method: 'POST',
-                        mode: 'cors', // Явно указываем режим CORS
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ user_id: userId, score: score })
-                    }).catch(function(e) {});
-                } catch(err) {}
-            }, 3000);
-        }
-
-        // 🎯 ПОЛНОСТЬЮ АВТОНОМНАЯ ФУНКЦИЯ ТАПА (РАБОТАЕТ ВСЕГДА)
-        function doTap(e) {
-            score = score + 1;
+                var saved = localStorage.getItem('axp_final_score_' + userId);
+                if (saved !== null) { score = parseInt(saved, 10) || 0; }
+            } catch(e) { score = 0; }
             scoreEl.innerText = score.toLocaleString();
 
-            // Пишем очки в фоновую очередь сохранения
-            saveToDB();
-
-            // Анимация вылета +1
-            var rect = coinButton.getBoundingClientRect();
-            var clickFloat = document.createElement('div');
-            clickFloat.classList.add('click-float');
-            clickFloat.innerText = '+1';
-            
-            var x = e.clientX - rect.left;
-            var y = e.clientY - rect.top;
-            clickFloat.style.left = x + 'px';
-            clickFloat.style.top = y + 'px';
-            
-            coinButton.appendChild(clickFloat);
-            setTimeout(function() { clickFloat.remove(); }, 400);
-
-            try {
-                if (tg && tg.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('medium');
+            // 2. Фоновый безопасный запрос к базе данных Render (изолирован от кликера)
+            function loadFromDB() {
+                if (!SERVER_URL || SERVER_URL.includes("onrender")) {
+                    try {
+                        fetch(SERVER_URL + '/api/score/' + userId)
+                            .then(function(res) { return res.json(); })
+                            .then(function(data) {
+                                if (data && data.score !== undefined && data.score > score) {
+                                    score = data.score;
+                                    scoreEl.innerText = score.toLocaleString();
+                                    localStorage.setItem('axp_final_score_' + userId, score);
+                                }
+                            }).catch(function() {});
+                    } catch(err) {}
                 }
-            } catch(hErr) {}
-        }
+            }
+            setTimeout(loadFromDB, 1500);
+
+            // 3. Плавное фоновое сохранение на сервер
+            var syncTimeout = null;
+            function saveToDB() {
+                try { localStorage.setItem('axp_final_score_' + userId, score); } catch(e) {}
+                if (!SERVER_URL) return;
+                if (syncTimeout) clearTimeout(syncTimeout);
+                
+                syncTimeout = setTimeout(function() {
+                    try {
+                        fetch(SERVER_URL + '/api/score', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_id: userId, score: score })
+                        }).catch(function() {});
+                    } catch(err) {}
+                }, 3000);
+            }
+
+            // 👑 ПРОФЕССИОНАЛЬНАЯ ПРИВЯЗКА КЛИКА ЧЕРЕЗ СЛУШАТЕЛЬ СОБЫТИЙ
+            // Этот метод пробивает любые системные блокировки Telegram!
+            coinButton.addEventListener('click', function(e) {
+                score = score + 1;
+                scoreEl.innerText = score.toLocaleString();
+
+                saveToDB();
+
+                // Вылет текста +1 ровно в точке нажатия
+                var rect = coinButton.getBoundingClientRect();
+                var clickFloat = document.createElement('div');
+                clickFloat.classList.add('click-float');
+                clickFloat.innerText = '+1';
+                
+                var x = e.clientX - rect.left;
+                var y = e.clientY - rect.top;
+                clickFloat.style.left = x + 'px';
+                clickFloat.style.top = y + 'px';
+                
+                coinButton.appendChild(clickFloat);
+                setTimeout(function() { clickFloat.remove(); }, 400);
+
+                // Тактильная отдача
+                try {
+                    if (tg && tg.HapticFeedback) { tg.HapticFeedback.impactOccurred('medium'); }
+                } catch(hErr) {}
+            });
+        });
     </script>
+    <!-- Загружаем внешний скрипт Telegram в самом низу, чтобы он ничего не заблокировал -->
+    <script src="https://telegram.org"></script>
 </body>
 </html>
