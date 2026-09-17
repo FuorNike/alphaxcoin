@@ -22,20 +22,16 @@
         .coin-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
         .coin-glow { position: absolute; width: 340px; height: 340px; background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0,0,0,0) 70%); pointer-events: none; z-index: 1; }
         
-        /* Дорогой хай-тек дизайн монеты */
         .coin-wrapper {
             position: relative; cursor: pointer; z-index: 2; width: 250px; height: 250px; border-radius: 50%;
             transition: transform 0.05s ease-out;
             background: radial-gradient(circle at center, #141b2d 0%, #090d16 100%); border: 4px solid #00e5ff;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 229, 255, 0.5), inset 0 0 30px rgba(0, 229, 255, 0.2);
             display: flex; align-items: center; justify-content: center;
-            
-            /* 👑 ГЛАВНЫЙ ФИКС: Убираем ебучий синий круг подсветки на смартфонах */
             -webkit-tap-highlight-color: transparent;
             tap-highlight-color: transparent;
         }
         
-        /* Плавное сжатие при тапе */
         .coin-wrapper:active { transform: scale(0.93); }
         
         .coin-logo {
@@ -44,7 +40,6 @@
             filter: drop-shadow(0px 0px 15px rgba(0, 229, 255, 0.6)); letter-spacing: -2px; pointer-events: none;
         }
         
-        /* Красивый вылетающий текст +1 со свечением */
         .click-float { position: absolute; color: #ffffff; font-size: 32px; font-weight: 900; text-shadow: 0 0 8px #d4af37, 0 0 15px #00e5ff; animation: floatUp 0.4s ease-out forwards; pointer-events: none; z-index: 10; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-100px) scale(1.2); } }
         
@@ -71,7 +66,6 @@
         <div class="score-label">Баланс AlphaX Points (AXP)</div>
     </div>
 
-    <!-- Загружаем скрипт Телеграма в конце -->
     <script src="https://telegram.org"></script>
     <script>
         var tg = window.Telegram.WebApp;
@@ -82,21 +76,23 @@
         var userId = 999;
         if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
             userId = tg.initDataUnsafe.user.id;
-            tg.expand();
-            if (tg.setHeaderColor) tg.setHeaderColor('#0b111e');
+            try { tg.expand(); if (tg.setHeaderColor) tg.setHeaderColor('#0b111e'); } catch(e) {}
         }
 
-        // Твой точный адрес живого сервера на Render с твоего прошлго скриншота:
         var SERVER_URL = "https://onrender.com"; 
 
-        // 1. Мгновенная автономная загрузка из локальной памяти
+        // ⚡️ 1. ЖЕЛЕЗОБЕТОННАЯ МГНОВЕННАЯ ЗАГРУЗКА ИЗ ПАМЯТИ ТЕЛЕФОНА
+        // Этот блок работает локально и никогда не упадет из-за ошибок сети
         try {
-            var saved = localStorage.getItem('alphax_pure_score_' + userId);
-            if (saved) { score = parseInt(saved, 10) || 0; }
-        } catch(e) {}
+            var saved = localStorage.getItem('axp_score_' + userId);
+            if (saved !== null) {
+                score = parseInt(saved, 10) || 0;
+            }
+        } catch(e) { score = 0; }
         scoreEl.innerText = score.toLocaleString();
 
-        // 2. БЕЗОПАСНАЯ фоновая синхронизация с базой данных Render при старте
+        // ☁️ 2. ИЗОЛИРОВАННЫЙ ФОНОВЫЙ ЗАПРОС К БАЗЕ ДАННЫХ RENDER
+        // Если сеть выдаст блок CORS — эта функция тихо закроется, не ломая кликер
         function loadFromDB() {
             if (!SERVER_URL) return;
             try {
@@ -104,34 +100,37 @@
                     .then(function(res) { return res.json(); })
                     .then(function(data) {
                         if (data && data.score !== undefined) {
-                            // Если в базе данных очков больше (например, обновилось с ПК) — подтягиваем на телефон
                             if (data.score > score) {
                                 score = data.score;
                                 scoreEl.innerText = score.toLocaleString();
-                                localStorage.setItem('alphax_pure_score_' + userId, score);
+                                localStorage.setItem('axp_score_' + userId, score);
                             }
                         }
                     })
-                    .catch(function(e) { console.log("База данных ожидает подключения..."); });
+                    .catch(function(e) { console.log("Фоновое ожидание базы данных..."); });
             } catch(err) {}
         }
         
-        loadFromDB();
+        // Запускаем фоновую подгрузку чуть позже, чтобы дать странице отрендериться
+        setTimeout(loadFromDB, 1000);
 
-        // 3. Мягкая фоновая отправка очков в базу (каждые 3 секунды после кликов)
+        // ☁️ 3. МЯГКАЯ ФОНОВАЯ ОТПРАВКА ОЧКОВ В БАЗУ ДАННЫХ
         var syncTimeout = null;
         function saveToDB() {
+            // Сначала железно спасаем очки локально на телефоне
             try {
-                localStorage.setItem('alphax_pure_score_' + userId, score);
+                localStorage.setItem('axp_score_' + userId, score);
             } catch(e) {}
 
             if (!SERVER_URL) return;
             if (syncTimeout) clearTimeout(syncTimeout);
             
+            // Отправляем запрос на сервер в изолированном тайм-ауте
             syncTimeout = setTimeout(function() {
                 try {
                     fetch(SERVER_URL + '/api/score', {
                         method: 'POST',
+                        mode: 'cors', // Явно указываем режим CORS
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ user_id: userId, score: score })
                     }).catch(function(e) {});
@@ -139,15 +138,15 @@
             }, 3000);
         }
 
-        // РЕАКТИВНАЯ ФУНКЦИЯ ТАПА
+        // 🎯 ПОЛНОСТЬЮ АВТОНОМНАЯ ФУНКЦИЯ ТАПА (РАБОТАЕТ ВСЕГДА)
         function doTap(e) {
             score = score + 1;
             scoreEl.innerText = score.toLocaleString();
 
-            // Отправляем изменения в фоновую синхронизацию
+            // Пишем очки в фоновую очередь сохранения
             saveToDB();
 
-            // Логика красивого вылета текста +1
+            // Анимация вылета +1
             var rect = coinButton.getBoundingClientRect();
             var clickFloat = document.createElement('div');
             clickFloat.classList.add('click-float');
@@ -161,7 +160,6 @@
             coinButton.appendChild(clickFloat);
             setTimeout(function() { clickFloat.remove(); }, 400);
 
-            // Вибрация на смартфонах
             try {
                 if (tg && tg.HapticFeedback) {
                     tg.HapticFeedback.impactOccurred('medium');
