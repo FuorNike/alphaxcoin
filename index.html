@@ -3,127 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AlphaX Coin</title>
+    <title>AlphaX</title>
     <style>
         body {
             margin: 0; padding: 0;
-            background: radial-gradient(circle at center, #0b111e 0%, #05070c 100%);
-            color: #ffffff; font-family: 'Segoe UI', Roboto, sans-serif;
+            background: #0b111e;
+            color: #ffffff; font-family: sans-serif;
             display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            height: 100vh; overflow: hidden; user-select: none; box-sizing: border-box; padding: 50px 20px;
+            height: 100vh; overflow: hidden; user-select: none; box-sizing: border-box; padding: 60px 20px;
         }
-        .header { text-align: center; }
-        .title {
-            font-size: 36px; font-weight: 900; letter-spacing: 2px;
-            background: linear-gradient(135deg, #ffe082 0%, #ffffff 50%, #b0bec5 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 25px rgba(255, 224, 130, 0.15);
-        }
-        .coin-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
-        .coin-glow { position: absolute; width: 340px; height: 340px; background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0,0,0,0) 70%); pointer-events: none; z-index: 1; }
+        .title { font-size: 36px; font-weight: 900; color: #ffe082; }
+        .coin-area { display: flex; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
         
-        /* Возвращаем дорогую неоновую монету */
+        /* Мощная неоновая монета со 100% поддержкой на всех мобилках */
         .coin-wrapper {
-            position: relative; cursor: pointer; z-index: 2; width: 250px; height: 250px; border-radius: 50%;
-            -webkit-tap-highlight-color: transparent; transition: transform 0.05s ease-out;
-            background: radial-gradient(circle at center, #141b2d 0%, #090d16 100%); border: 4px solid #00e5ff;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 229, 255, 0.5), inset 0 0 30px rgba(0, 229, 255, 0.2);
+            position: relative; width: 230px; height: 230px; border-radius: 50%;
+            background: #141b2d; border: 5px solid #00e5ff;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.4);
             display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
         }
-        .coin-wrapper:active { transform: scale(0.93); }
-        .coin-logo {
-            font-size: 120px; font-weight: 900; background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0px 0px 15px rgba(0, 229, 255, 0.6)); letter-spacing: -2px; pointer-events: none;
-        }
+        .coin-logo { font-size: 110px; font-weight: 900; color: #ffffff; }
         
-        /* Вылетающий текст +1 со свечением */
-        .click-float { position: absolute; color: #ffffff; font-size: 32px; font-weight: 900; text-shadow: 0 0 8px #d4af37, 0 0 15px #00e5ff; animation: floatUp 0.4s ease-out forwards; pointer-events: none; z-index: 10; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-100px) scale(1.2); } }
+        /* Текст +1 */
+        .click-float { position: absolute; color: #00e5ff; font-size: 36px; font-weight: bold; animation: floatUp 0.4s ease-out forwards; pointer-events: none; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-80px); } }
         
-        .stats-box { text-align: center; margin-bottom: 20px; }
-        .score-container { font-size: 54px; font-weight: 900; color: #00e5ff; text-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
-        .score-label { color: #64748b; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
+        .score-container { font-size: 54px; font-weight: 900; color: #00e5ff; }
+        .score-label { color: #64748b; font-size: 14px; text-transform: uppercase; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="title">AlphaX Coin</div>
-    </div>
+    <div class="title">AlphaX Coin</div>
 
     <div class="coin-area">
-        <div class="coin-glow"></div>
-        <div class="coin-wrapper" id="coinButton">
+        <!-- Поменяли обработчик на универсальный, который работает везде -->
+        <div class="coin-wrapper" id="coinButton" onclick="doTap(event)">
             <span class="coin-logo">A</span>
         </div>
     </div>
 
-    <div class="stats-box">
+    <div style="text-align: center; margin-bottom: 30px;">
         <div class="score-container" id="score">0</div>
-        <div class="score-label">Баланс AlphaX Points (AXP)</div>
+        <div class="score-label">Баланс AXP</div>
     </div>
 
-    <!-- Подключаем скрипт Telegram в самом конце, чтобы он не тормозил загрузку элементов -->
-    <script src="https://telegram.org"></script>
     <script>
-        // Инициализация WebApp без риска вызвать ошибку до загрузки DOM
-        try {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.expand();
-                if (window.Telegram.WebApp.setHeaderColor) {
-                    window.Telegram.WebApp.setHeaderColor('#0b111e');
-                }
-            }
-        } catch(e) {}
-
         var score = 0;
         var scoreEl = document.getElementById('score');
         var coinButton = document.getElementById('coinButton');
-        
-        // Читаем старый локальный баланс
+
+        // Прямая, дубовая загрузка баланса
         try {
             var saved = localStorage.getItem('alphax_pure_score');
-            if (saved !== null) {
-                score = parseInt(saved, 10) || 0;
-            }
-        } catch(e) { score = 0; }
-        
-        scoreEl.innerText = score.toLocaleString();
+            if (saved) { score = parseInt(saved, 10) || 0; }
+        } catch(e) {}
+        scoreEl.innerText = score;
 
-        // Безопасный и реактивный обработчик кликов
-        coinButton.onclick = function(e) {
+        // Железобетонная функция клика, завязанная прямо на тег в HTML
+        function doTap(e) {
             score = score + 1;
-            scoreEl.innerText = score.toLocaleString();
+            scoreEl.innerText = score;
 
             try {
                 localStorage.setItem('alphax_pure_score', score);
             } catch (err) {}
 
-            // Логика вылета текста +1
+            // Вылет +1
             var rect = coinButton.getBoundingClientRect();
             var clickFloat = document.createElement('div');
             clickFloat.classList.add('click-float');
             clickFloat.innerText = '+1';
             
-            // Защита от сбоя координат на мобилках
-            var clickX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
-            var clickY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
-            
-            clickFloat.style.left = (clickX || 125) + 'px';
-            clickFloat.style.top = (clickY || 125) + 'px';
+            // Считаем координаты
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            clickFloat.style.left = x + 'px';
+            clickFloat.style.top = y + 'px';
             
             coinButton.appendChild(clickFloat);
-            
             setTimeout(function() { clickFloat.remove(); }, 400);
-
-            // Мягкая вибрация
-            try {
-                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                }
-            } catch(hErr) {}
-        };
+        }
     </script>
 </body>
 </html>
